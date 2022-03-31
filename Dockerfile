@@ -9,7 +9,6 @@ RUN \
       vim \
       cmake \
       build-essential \
-      wget \
       zlib1g-dev \
       supervisor \
       libpcre2-dev \
