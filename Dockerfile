@@ -1,20 +1,26 @@
 FROM ubuntu:18.04
 
-MAINTAINER mislav.novakovic@sartura.hr
+MAINTAINER macauleycheng@gmail.com
 
 RUN \ 
       apt-get update && \
       DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y \
       git \
       vim \
+      bison \
+      autoconf \
+      dh-autoreconf\
+      flex \
       cmake \
       build-essential \
       zlib1g-dev \
       supervisor \
-      libpcre2-dev \
+      libpcre3-dev \
       pkg-config \
       libavl-dev \
       libev-dev \
+      libgcrypt20-dev \
+      libssh-dev libev-dev \
       libprotobuf-c-dev \
       protobuf-c-compiler \
       libssl-dev \
@@ -37,23 +43,13 @@ RUN \
 RUN mkdir /opt/dev
 WORKDIR /opt/dev
 
-RUN \
-    git clone http://git.libssh.org/projects/libssh.git && \
-    cd libssh && \
-    git checkout libssh-0.9.6 && \
-    mkdir build && \
-    cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr  .. && \
-    make install && \
-    ldconfig
-    
 
 # libyang
 RUN \
       cd /opt/dev && \
-      git clone -b master https://github.com/CESNET/libyang.git && \
+      git clone -b v1.0-r4 https://github.com/CESNET/libyang.git && \
       cd libyang && mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF .. && \
+      cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF .. && \
       make -j2 && \
       make install && \
       ldconfig
@@ -61,9 +57,9 @@ RUN \
 # sysrepo
 RUN \
       cd /opt/dev && \
-      git clone -b master https://github.com/sysrepo/sysrepo.git && \
+      git clone -b v0.7.8 https://github.com/sysrepo/sysrepo.git && \
       cd sysrepo && mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_TESTS=OFF -DREPOSITORY_LOC:PATH=/etc/sysrepo .. && \
+      cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_TESTS=OFF -DREPOSITORY_LOC:PATH=/etc/sysrepo .. && \
       make -j2 && \
       make install && \
       ldconfig
@@ -71,35 +67,33 @@ RUN \
 # libnetconf2
 RUN \
       cd /opt/dev && \
-      git clone -b master https://github.com/CESNET/libnetconf2.git && \
+      git clone -b v0.12-r2 https://github.com/CESNET/libnetconf2.git && \
       cd libnetconf2 && mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF .. && \
+      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr .. && \
       make -j2 && \
       make install && \
       ldconfig
 
-# keystore
 RUN \
       cd /opt/dev && \
-      git clone -b master https://github.com/CESNET/Netopeer2.git && \
-      cd Netopeer2 && \
-      mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Debug" .. && \
-      make -j2 && \
+      git clone https://github.com/protocolbuffers/protobuf.git && \
+      cd protobuf && \
+      git submodule update --init --recursive && \
+      ./autogen.sh && \
+      ./configure && \
+      make && \
       make install && \
       ldconfig
 
-# netopeer2
-#RUN \
-#      cd /opt/dev && \
-#      cd Netopeer2/server && mkdir build && cd build && \
-#      cmake -DCMAKE_BUILD_TYPE:String="Debug" .. && \
-#      make -j2 && \
-#      make install && \
-#      cd ../../cli && mkdir build && cd build && \
-#      cmake -DCMAKE_BUILD_TYPE:String="Debug" .. && \
-#      make -j2 && \
-#      make install
+
+RUN \
+      cd /opt/dev && \
+      git clone -b v0.7-r2 https://github.com/CESNET/Netopeer2.git && \
+      cd Netopeer2/cli && \
+      cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr . && \
+      make && \
+      make install
+
 
 ENV EDITOR vim
 EXPOSE 830
