@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-MAINTAINER mislav.novakovic@sartura.hr
+MAINTAINER macauleycheng@gmail.com
 
 RUN \ 
       apt-get update && \
@@ -38,9 +38,8 @@ RUN mkdir /opt/dev
 WORKDIR /opt/dev
 
 RUN \
-    git clone http://git.libssh.org/projects/libssh.git && \
+    git clone -b libssh-0.9.6 http://git.libssh.org/projects/libssh.git && \
     cd libssh && \
-    git checkout libssh-0.9.6 && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr  .. && \
@@ -51,9 +50,9 @@ RUN \
 # libyang
 RUN \
       cd /opt/dev && \
-      git clone -b master https://github.com/CESNET/libyang.git && \
+      git clone -b v2.0.164 https://github.com/CESNET/libyang.git && \
       cd libyang && mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF .. && \
+      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr .. && \
       make -j2 && \
       make install && \
       ldconfig
@@ -61,9 +60,9 @@ RUN \
 # sysrepo
 RUN \
       cd /opt/dev && \
-      git clone -b master https://github.com/sysrepo/sysrepo.git && \
+      git clone -b v2.1.42 https://github.com/sysrepo/sysrepo.git && \
       cd sysrepo && mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_TESTS=OFF -DREPOSITORY_LOC:PATH=/etc/sysrepo .. && \
+      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_TESTS=OFF -DREPOSITORY_LOC:PATH=/etc/sysrepo -DCMAKE_INSTALL_PREFIX:PATH=/usr .. && \
       make -j2 && \
       make install && \
       ldconfig
@@ -71,35 +70,24 @@ RUN \
 # libnetconf2
 RUN \
       cd /opt/dev && \
-      git clone -b master https://github.com/CESNET/libnetconf2.git && \
+      git clone -b v2.1.7  https://github.com/CESNET/libnetconf2.git && \
       cd libnetconf2 && mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF .. && \
+      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DENABLE_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr .. && \
       make -j2 && \
       make install && \
       ldconfig
 
-# keystore
+# Netopeer
 RUN \
       cd /opt/dev && \
-      git clone -b master https://github.com/CESNET/Netopeer2.git && \
+      git clone -b v2.1.16 https://github.com/CESNET/Netopeer2.git && \
       cd Netopeer2 && \
       mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Debug" .. && \
+      cmake -DCMAKE_BUILD_TYPE:String="Debug" -DCMAKE_INSTALL_PREFIX:PATH=/usr .. && \
       make -j2 && \
       make install && \
       ldconfig
 
-# netopeer2
-#RUN \
-#      cd /opt/dev && \
-#      cd Netopeer2/server && mkdir build && cd build && \
-#      cmake -DCMAKE_BUILD_TYPE:String="Debug" .. && \
-#      make -j2 && \
-#      make install && \
-#      cd ../../cli && mkdir build && cd build && \
-#      cmake -DCMAKE_BUILD_TYPE:String="Debug" .. && \
-#      make -j2 && \
-#      make install
 
 ENV EDITOR vim
 EXPOSE 830
